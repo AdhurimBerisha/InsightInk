@@ -6,7 +6,6 @@ import PostCard from '../components/PostCard';
 export default function Search() {
   const [sidebarData, setSidebarData] = useState({
     searchTerm: '',
-    sort: 'asc',
     category: 'uncategorized',
   });
 
@@ -20,14 +19,12 @@ export default function Search() {
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
     const searchTermFromUrl = urlParams.get('searchTerm');
-    const sortFromUrl = urlParams.get('sort');
     const categoryFromUrl = urlParams.get('category');
 
-    if (searchTermFromUrl || sortFromUrl || categoryFromUrl) {
+    if (searchTermFromUrl || categoryFromUrl) {
       setSidebarData({
         ...sidebarData,
         searchTerm: searchTermFromUrl || sidebarData.searchTerm,
-        sort: sortFromUrl || sidebarData.sort,
         category: categoryFromUrl || sidebarData.category,
       });
     }
@@ -41,17 +38,9 @@ export default function Search() {
         return;
       }
       const data = await res.json();
-      // Sort the posts based on the selected sort option
-      const sortedPosts = data.posts.sort((a, b) => {
-        if (sidebarData.sort === 'asc') {
-          return a.title.localeCompare(b.title);
-        } else {
-          return b.title.localeCompare(a.title);
-        }
-      });
-      setPosts(sortedPosts);
+      setPosts(data.posts);
       setLoading(false);
-      setShowMore(sortedPosts.length === 9);
+      setShowMore(data.posts.length === 9);
     };
 
     fetchPosts();
@@ -66,7 +55,6 @@ export default function Search() {
     e.preventDefault();
     const urlParams = new URLSearchParams(location.search);
     urlParams.set('searchTerm', sidebarData.searchTerm);
-    urlParams.set('sort', sidebarData.sort);
     // Check if the category is 'uncategorized'
     if (sidebarData.category === 'uncategorized') {
       // Remove the 'category' parameter from the search query
@@ -106,13 +94,6 @@ export default function Search() {
               value={sidebarData.searchTerm}
               onChange={handleChange}
             />
-          </div>
-          <div className='flex items-center gap-2'>
-            <label className='font-semibold'>Sort:</label>
-            <Select onChange={handleChange} value={sidebarData.sort} id='sort'>
-              <option value='asc'>A/Z</option>
-              <option value='desc'>Z/A</option>
-            </Select>
           </div>
           <div className='flex items-center gap-2'>
             <label className='font-semibold'>Category:</label>
