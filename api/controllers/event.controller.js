@@ -62,12 +62,14 @@ export const updateEvent = async (req, res, next) => {
     return next(errorHandler(403, "You are not allowed to update an event"));
   }
   const eventId = req.params.eventId;
-  const { title, description, start_date, end_date } = req.body;
-  const query = `UPDATE events SET title = ?, description = ?, start_date = ?, end_date = ? WHERE id = ?`;
-  mysqlConnection().query(query, [title, description, start_date, end_date, eventId], (error, results, fields) => {
+  const { title, description, start_date, end_date, image_url } = req.body;
+  const query = `UPDATE events SET title = ?, description = ?, start_date = ?, end_date = ?, image_url = ? WHERE id = ?`;
+  mysqlConnection().query(query, [title, description, start_date, end_date, image_url, eventId], (error, results, fields) => {
     if (error || results.affectedRows === 0) {
       return next(errorHandler(404, "Event not found"));
     }
-    res.status(200).json({ id: eventId, title, description, start_date, end_date });
+    res.status(200).json({ id: eventId, title, description, start_date, end_date, image_url });
   });
 };
+
+
