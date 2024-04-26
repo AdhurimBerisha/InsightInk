@@ -4,8 +4,10 @@ import dotenv from "dotenv";
 import userRoutes from "./routes/user.route.js";
 import authRoutes from "./routes/auth.route.js";
 import postRoutes from "./routes/post.route.js";
+import eventRoutes from "./routes/event.route.js";
 import commentRoutes from "./routes/comment.route.js";
 import cookieParser from "cookie-parser";
+import mysqlConnection from './mysql.js';
 
 dotenv.config();
 
@@ -19,6 +21,7 @@ mongoose
   });
 
 const app = express();
+const pool = mysqlConnection();
 
 app.use(express.json());
 app.use(cookieParser());
@@ -27,10 +30,12 @@ app.listen(3000, () => {
   console.log("Server is running on port 3000!");
 });
 
+
 app.use("/api/user", userRoutes);
 app.use("/api/auth", authRoutes);
 app.use('/api/post', postRoutes);
 app.use('/api/comment', commentRoutes);
+app.use('/api/event', eventRoutes);
 
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
@@ -40,4 +45,12 @@ app.use((err, req, res, next) => {
     statusCode,
     message,
   });
+});
+
+pool.query("SELECT 1", (error, results, fields) => {
+  if (error) {
+    console.error("Error connecting to MySQL: ", error);
+  } else {
+    console.log("MySQL is connected!");
+  }
 });
