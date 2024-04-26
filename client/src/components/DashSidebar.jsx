@@ -7,8 +7,9 @@ import {
   HiDocumentText,
   HiOutlineUserGroup,
   HiAnnotation,
-  HiChartPie
+  HiChartPie,
 } from "react-icons/hi";
+import { MdEvent } from "react-icons/md";
 import { signoutSuccess } from "../redux/user/userSlice";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
@@ -44,12 +45,12 @@ export default function DashSidebar() {
     <Sidebar className="w-full md:w-56">
       <Sidebar.Items>
         <Sidebar.ItemGroup className="flex flex-col gap-1">
-        {currentUser && currentUser.isAdmin && (
-            <Link to='/dashboard?tab=dash'>
+          {currentUser && currentUser.isAdmin && (
+            <Link to="/dashboard?tab=dash">
               <Sidebar.Item
-                active={tab === 'dash' || !tab}
+                active={tab === "dash" || !tab}
                 icon={HiChartPie}
-                as='div'
+                as="div"
               >
                 Dashboard
               </Sidebar.Item>
@@ -99,7 +100,11 @@ export default function DashSidebar() {
               </Link>
             </>
           )}
-
+          <Link to="/dashboard?tab=events">
+            <Sidebar.Item active={tab === "events"} icon={MdEvent} as="div">
+              Events
+            </Sidebar.Item>
+          </Link>
           <Sidebar.Item
             icon={HiArrowSmRight}
             className="cursor-pointer"
