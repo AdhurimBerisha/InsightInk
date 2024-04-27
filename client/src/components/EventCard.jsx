@@ -14,17 +14,17 @@ export default function EventCard({ event }) {
   };
 
   return (
-    <div className="group relative m-7 w-full border border-teal-500 hover:border-2 h-[370px] overflow-hidden rounded-lg sm:w-[430px] ">
+    <div className="group relative m-7 w-full border border-teal-500 hover:border-2 h-[370px] overflow-hidden rounded-lg sm:w-[430px]  ">
       <img
         src={event.image_url}
         alt="post cover"
         className="h-[250px] w-full  object-cover"
       />
-      <div className="p-3 flex flex-col ">
-        <p className="text-xl font-semibold line-clamp-2 text-center ">
+      <div className="pt-2 flex flex-col">
+        <h1 className="text-2xl text-center text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">
           {event.title}
-        </p>
-        <p className="text-center">{event.description}</p>
+        </h1>
+        <p className="text-center pb-1 ">{event.description}</p>
         <p className="text-center italic text-sm">
           Start Date: {formatDate(event.start_date)}
         </p>
