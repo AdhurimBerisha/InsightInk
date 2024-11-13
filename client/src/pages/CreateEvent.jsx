@@ -21,6 +21,7 @@ export default function CreateEvent() {
   const maxLength = 50;
   const [imageUrl, setImageUrl] = useState(null);
   const [category, setCategory] = useState(""); // State for category
+  const [otherCategory, setOtherCategory] = useState(""); // State for custom category (if "Other" is selected)
   const [descriptionOption, setDescriptionOption] = useState(""); // State for description option
 
   const navigate = useNavigate();
@@ -76,16 +77,18 @@ export default function CreateEvent() {
     console.log("Category:", category); // Make sure category is logged properly
     console.log("Description Option:", descriptionOption); // Make sure description option is logged properly
     try {
+      const eventData = {
+        ...formData,
+        category: category === "Other" ? otherCategory : category, // Use the custom category if "Other" is selected
+        descriptionOption, // Include the description option in the request
+      };
+
       const res = await fetch("/api/event/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          ...formData,
-          category,
-          descriptionOption, // Include the description option in the request
-        }),
+        body: JSON.stringify(eventData),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -153,7 +156,12 @@ export default function CreateEvent() {
           <Select
             id="category"
             value={category}
-            onChange={(e) => setCategory(e.target.value)}
+            onChange={(e) => {
+              setCategory(e.target.value);
+              if (e.target.value !== "Other") {
+                setOtherCategory(""); // Reset custom category if another is selected
+              }
+            }}
             className="border-2 border-gray-300 p-2 rounded-md w-80"
           >
             <option value="">Select Category</option>
@@ -163,6 +171,17 @@ export default function CreateEvent() {
             <option value="Charity">Charity</option>
             <option value="Other">Other</option>
           </Select>
+
+          {/* If "Other" is selected, show the custom input */}
+          {category === "Other" && (
+            <TextInput
+              type="text"
+              placeholder="Enter Custom Category"
+              value={otherCategory}
+              onChange={(e) => setOtherCategory(e.target.value)}
+              className="border-2 border-gray-300 p-2 rounded-md w-80"
+            />
+          )}
 
           {/* Description Option Dropdown */}
           <Select
