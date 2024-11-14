@@ -13,7 +13,7 @@ export const createEvent = async (req, res, next) => {
     !req.body.end_date ||
     !req.body.image_url ||
     !req.body.category ||
-    !req.body.descriptionOption
+    !req.body.location
   ) {
     return next(errorHandler(400, "Please provide all required fields"));
   }
@@ -25,11 +25,10 @@ export const createEvent = async (req, res, next) => {
     end_date,
     image_url,
     category,
-    descriptionOption,
+    location,
   } = req.body;
 
   try {
-    // Check if the category already exists
     const categoryQuery = `SELECT id FROM categories WHERE name = ?`;
     const [categoryResults] = await mysqlConnection()
       .promise()
@@ -37,19 +36,24 @@ export const createEvent = async (req, res, next) => {
 
     let categoryId;
     if (categoryResults.length === 0) {
-      // Insert the new category into the categories table
       const insertCategoryQuery = `INSERT INTO categories (name) VALUES (?)`;
       const [categoryInsertResults] = await mysqlConnection()
         .promise()
         .query(insertCategoryQuery, [category]);
       categoryId = categoryInsertResults.insertId;
     } else {
-      categoryId = categoryResults[0].id; // Use existing category ID
+      categoryId = categoryResults[0].id;
     }
 
-    // Insert the event with the existing or new category and description option
+    const { name, address, city, country } = location;
+    const insertLocationQuery = `INSERT INTO location (name, address, city, country) VALUES (?, ?, ?, ?)`;
+    const [locationResults] = await mysqlConnection()
+      .promise()
+      .query(insertLocationQuery, [name, address, city, country]);
+    const locationId = locationResults.insertId;
+
     const insertEventQuery = `
-      INSERT INTO events (title, description, start_date, end_date, image_url, category_id, description_option) 
+      INSERT INTO events (title, description, start_date, end_date, image_url, category_id, location_id) 
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
     const [eventResults] = await mysqlConnection()
@@ -60,8 +64,8 @@ export const createEvent = async (req, res, next) => {
         start_date,
         end_date,
         image_url,
-        categoryId, // Use the correct categoryId here
-        descriptionOption,
+        categoryId,
+        locationId,
       ]);
 
     res.status(201).json({
@@ -72,10 +76,10 @@ export const createEvent = async (req, res, next) => {
       end_date,
       image_url,
       category_id: categoryId,
-      description_option: descriptionOption,
+      location_id: locationId,
     });
   } catch (error) {
-    console.error(error); // Log the error for debugging
+    console.error(error);
     return next(errorHandler(500, "Something went wrong"));
   }
 };

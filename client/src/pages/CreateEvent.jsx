@@ -20,9 +20,17 @@ export default function CreateEvent() {
   const [descriptionLength, setDescriptionLength] = useState(0);
   const maxLength = 50;
   const [imageUrl, setImageUrl] = useState(null);
-  const [category, setCategory] = useState(""); // State for category
-  const [otherCategory, setOtherCategory] = useState(""); // State for custom category (if "Other" is selected)
-  const [descriptionOption, setDescriptionOption] = useState(""); // State for description option
+  const [category, setCategory] = useState("");
+  const [otherCategory, setOtherCategory] = useState("");
+  const [descriptionOption, setDescriptionOption] = useState("");
+
+  // Location fields
+  const [location, setLocation] = useState({
+    name: "",
+    address: "",
+    city: "",
+    country: "",
+  });
 
   const navigate = useNavigate();
 
@@ -74,13 +82,14 @@ export default function CreateEvent() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Category:", category); // Make sure category is logged properly
-    console.log("Description Option:", descriptionOption); // Make sure description option is logged properly
+    console.log("Category:", category);
+    console.log("Description Option:", descriptionOption);
     try {
       const eventData = {
         ...formData,
-        category: category === "Other" ? otherCategory : category, // Use the custom category if "Other" is selected
-        descriptionOption, // Include the description option in the request
+        category: category === "Other" ? otherCategory : category,
+        descriptionOption,
+        location,
       };
 
       const res = await fetch("/api/event/create", {
@@ -159,7 +168,7 @@ export default function CreateEvent() {
             onChange={(e) => {
               setCategory(e.target.value);
               if (e.target.value !== "Other") {
-                setOtherCategory(""); // Reset custom category if another is selected
+                setOtherCategory("");
               }
             }}
             className="border-2 border-gray-300 p-2 rounded-md w-80"
@@ -172,7 +181,6 @@ export default function CreateEvent() {
             <option value="Other">Other</option>
           </Select>
 
-          {/* If "Other" is selected, show the custom input */}
           {category === "Other" && (
             <TextInput
               type="text"
@@ -183,7 +191,6 @@ export default function CreateEvent() {
             />
           )}
 
-          {/* Description Option Dropdown */}
           <Select
             id="descriptionOption"
             value={descriptionOption}
@@ -195,6 +202,44 @@ export default function CreateEvent() {
             <option value="Pay to join">Pay to join</option>
           </Select>
         </div>
+
+        {/* Location fields */}
+        <TextInput
+          type="text"
+          placeholder="Location Name"
+          required
+          id="location_name"
+          value={location.name}
+          onChange={(e) => setLocation({ ...location, name: e.target.value })}
+        />
+        <TextInput
+          type="text"
+          placeholder="Address"
+          required
+          id="address"
+          value={location.address}
+          onChange={(e) =>
+            setLocation({ ...location, address: e.target.value })
+          }
+        />
+        <TextInput
+          type="text"
+          placeholder="City"
+          required
+          id="city"
+          value={location.city}
+          onChange={(e) => setLocation({ ...location, city: e.target.value })}
+        />
+        <TextInput
+          type="text"
+          placeholder="Country"
+          required
+          id="country"
+          value={location.country}
+          onChange={(e) =>
+            setLocation({ ...location, country: e.target.value })
+          }
+        />
 
         <div className="flex gap-4 items-center justify-between border-4 border-teal-500 border-dotted p-3">
           <FileInput
