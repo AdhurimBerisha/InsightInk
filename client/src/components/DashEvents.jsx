@@ -9,7 +9,7 @@ export default function DashEvents() {
   const [events, setEvents] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [eventIdToDelete, setEventIdToDelete] = useState("");
-  
+
   useEffect(() => {
     const fetchEvents = async () => {
       try {
@@ -33,7 +33,7 @@ export default function DashEvents() {
       const res = await fetch(
         `/api/event/deleteevent/${eventIdToDelete}/${currentUser._id}`,
         {
-          method: 'DELETE',
+          method: "DELETE",
         }
       );
       const data = await res.json();
@@ -59,6 +59,8 @@ export default function DashEvents() {
               <Table.HeadCell>End date</Table.HeadCell>
               <Table.HeadCell>Event title</Table.HeadCell>
               <Table.HeadCell>Description</Table.HeadCell>
+              <Table.HeadCell>Category</Table.HeadCell>
+              <Table.HeadCell>Location</Table.HeadCell>
               <Table.HeadCell>Delete</Table.HeadCell>
               <Table.HeadCell>
                 <span>Edit</span>
@@ -82,6 +84,11 @@ export default function DashEvents() {
                     </Link>
                   </Table.Cell>
                   <Table.Cell>{event.description}</Table.Cell>
+                  <Table.Cell>{event.category_name}</Table.Cell>
+                  <Table.Cell>
+                    {event.location_name}, {event.address}, {event.city},
+                    {event.country}
+                  </Table.Cell>
                   <Table.Cell>
                     <span
                       onClick={() => {
