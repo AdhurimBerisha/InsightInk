@@ -190,17 +190,6 @@ export default function CreateEvent() {
               className="border-2 border-gray-300 p-2 rounded-md w-80"
             />
           )}
-
-          <Select
-            id="descriptionOption"
-            value={descriptionOption}
-            onChange={(e) => setDescriptionOption(e.target.value)}
-            className="border-2 border-gray-300 p-2 rounded-md w-80"
-          >
-            <option value="">Select Description Option</option>
-            <option value="Free to join">Free to join</option>
-            <option value="Pay to join">Pay to join</option>
-          </Select>
         </div>
 
         {/* Location fields */}
