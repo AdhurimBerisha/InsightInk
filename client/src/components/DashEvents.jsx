@@ -78,7 +78,7 @@ export default function DashEvents() {
                   <Table.Cell>
                     <Link
                       className="font-medium text-gray-900 dark:text-white"
-                      to={`/event/${event.id}`}
+                      to={`/events`}
                     >
                       {event.title}
                     </Link>
