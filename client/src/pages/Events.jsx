@@ -27,7 +27,11 @@ export default function Events() {
     <div className="max-w-full mx-auto p-3 flex flex-col gap-8 py-7 m-7 ">
       {visibleEvents.length > 0 && (
         <div className="flex flex-col gap-6">
-          <h2 className="text-2xl font-semibold text-center">Upcoming Events</h2>
+          <h2 className="text-2xl font-semibold text-center">
+            Upcoming Events
+            <p>🌟 All events are free to join and everyone is welcome!</p>
+          </h2>
+
           <div className="flex flex-wrap justify-center gap-4">
             {visibleEvents.map((event) => (
               <EventCard key={event.id} event={event} />

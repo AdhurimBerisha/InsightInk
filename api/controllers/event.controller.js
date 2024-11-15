@@ -96,18 +96,54 @@ export const createEvent = async (req, res, next) => {
 };
 
 export const getEvents = async (req, res, next) => {
-  const query = `SELECT * FROM events`;
+  const query = `
+    SELECT 
+      events.id, 
+      events.title, 
+      events.description, 
+      events.start_date, 
+      events.end_date, 
+      events.image_url, 
+      categories.name AS category_name,  /* Correctly select category name */
+      location.name AS location_name,    /* Correctly select location name */
+      location.address, 
+      location.city, 
+      location.country
+    FROM events
+    LEFT JOIN categories ON events.category_id = categories.id
+    LEFT JOIN location ON events.location_id = location.id
+  `;
+
   mysqlConnection().query(query, (error, results, fields) => {
     if (error) {
       return next(errorHandler(500, "Failed to fetch events"));
     }
-    res.status(200).json(results);
+    console.log("Results from query: ", results); // Log to check the data
+    res.status(200).json(results); // Return the results, which should include category_name and location_name
   });
 };
 
 export const getEvent = async (req, res, next) => {
   const eventId = req.params.eventId;
-  const query = `SELECT * FROM events WHERE id = ?`;
+  const query = `
+    SELECT 
+      events.id, 
+      events.title, 
+      events.description, 
+      events.start_date, 
+      events.end_date, 
+      events.image_url, 
+      categories.name AS category_name,
+      location.name AS location_name, 
+      location.address, 
+      location.city, 
+      location.country
+    FROM events
+    LEFT JOIN categories ON events.category_id = categories.id
+    LEFT JOIN location ON events.location_id = location.id
+    WHERE events.id = ?
+  `;
+
   mysqlConnection().query(query, [eventId], (error, results, fields) => {
     if (error) {
       return next(errorHandler(500, "Failed to fetch event"));
@@ -115,7 +151,7 @@ export const getEvent = async (req, res, next) => {
     if (results.length === 0) {
       return next(errorHandler(404, "Event not found"));
     }
-    res.status(200).json(results[0]);
+    res.status(200).json(results[0]); // Ensure the response returns the full event with category and location names
   });
 };
 
