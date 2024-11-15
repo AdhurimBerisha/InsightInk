@@ -29,6 +29,7 @@ export const createEvent = async (req, res, next) => {
   } = req.body;
 
   try {
+    // First, check if the category exists
     const categoryQuery = `SELECT id FROM categories WHERE name = ?`;
     const [categoryResults] = await mysqlConnection()
       .promise()
@@ -36,15 +37,24 @@ export const createEvent = async (req, res, next) => {
 
     let categoryId;
     if (categoryResults.length === 0) {
-      const insertCategoryQuery = `INSERT INTO categories (name) VALUES (?)`;
+      // If category does not exist, insert it
+      const insertCategoryQuery = `INSERT INTO categories (name, event_name) VALUES (?, ?)`;
       const [categoryInsertResults] = await mysqlConnection()
         .promise()
-        .query(insertCategoryQuery, [category]);
+        .query(insertCategoryQuery, [category, title]); // Passing both category and title
+
       categoryId = categoryInsertResults.insertId;
     } else {
       categoryId = categoryResults[0].id;
     }
 
+    // Insert the event_name alongside the category name (even duplicates allowed)
+    const insertCategoryEventQuery = `INSERT INTO categories (name, event_name) VALUES (?, ?)`;
+    await mysqlConnection()
+      .promise()
+      .query(insertCategoryEventQuery, [category, title]);
+
+    // Insert location into the 'location' table
     const { name, address, city, country } = location;
     const insertLocationQuery = `INSERT INTO location (name, address, city, country) VALUES (?, ?, ?, ?)`;
     const [locationResults] = await mysqlConnection()
@@ -52,6 +62,7 @@ export const createEvent = async (req, res, next) => {
       .query(insertLocationQuery, [name, address, city, country]);
     const locationId = locationResults.insertId;
 
+    // Insert the event into the 'events' table
     const insertEventQuery = `
       INSERT INTO events (title, description, start_date, end_date, image_url, category_id, location_id) 
       VALUES (?, ?, ?, ?, ?, ?, ?)
