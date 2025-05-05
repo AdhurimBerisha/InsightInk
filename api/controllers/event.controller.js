@@ -1,21 +1,10 @@
 import mysqlConnection from "../mysql.js";
 import { errorHandler } from "../utils/error.js";
 
+// CREATE EVENT
 export const createEvent = async (req, res, next) => {
   if (!req.user.isAdmin) {
     return next(errorHandler(403, "You are not allowed to create an event"));
-  }
-
-  if (
-    !req.body.title ||
-    !req.body.description ||
-    !req.body.start_date ||
-    !req.body.end_date ||
-    !req.body.image_url ||
-    !req.body.category ||
-    !req.body.location
-  ) {
-    return next(errorHandler(400, "Please provide all required fields"));
   }
 
   const {
@@ -28,48 +17,63 @@ export const createEvent = async (req, res, next) => {
     location,
   } = req.body;
 
+  if (
+    !title ||
+    !description ||
+    !start_date ||
+    !end_date ||
+    !image_url ||
+    !category ||
+    !location ||
+    !location.name ||
+    !location.address ||
+    !location.city ||
+    !location.country
+  ) {
+    return next(errorHandler(400, "Please provide all required fields"));
+  }
+
   try {
-    // First, check if the category exists
-    const categoryQuery = `SELECT id FROM categories WHERE name = ?`;
-    const [categoryResults] = await mysqlConnection()
-      .promise()
-      .query(categoryQuery, [category]);
+    const connection = mysqlConnection().promise();
 
+    // Check or insert category
+    const [categoryRows] = await connection.query(
+      `SELECT id FROM categories WHERE name = ?`,
+      [category]
+    );
     let categoryId;
-    if (categoryResults.length === 0) {
-      // If category does not exist, insert it
-      const insertCategoryQuery = `INSERT INTO categories (name, event_name) VALUES (?, ?)`;
-      const [categoryInsertResults] = await mysqlConnection()
-        .promise()
-        .query(insertCategoryQuery, [category, title]); // Passing both category and title
-
-      categoryId = categoryInsertResults.insertId;
+    if (categoryRows.length === 0) {
+      const [categoryInsert] = await connection.query(
+        `INSERT INTO categories (name) VALUES (?)`,
+        [category]
+      );
+      categoryId = categoryInsert.insertId;
     } else {
-      categoryId = categoryResults[0].id;
+      categoryId = categoryRows[0].id;
     }
 
-    // Insert the event_name alongside the category name (even duplicates allowed)
-    const insertCategoryEventQuery = `INSERT INTO categories (name, event_name) VALUES (?, ?)`;
-    await mysqlConnection()
-      .promise()
-      .query(insertCategoryEventQuery, [category, title]);
-
-    // Insert location into the 'location' table
+    // Check or insert location
     const { name, address, city, country } = location;
-    const insertLocationQuery = `INSERT INTO location (name, address, city, country) VALUES (?, ?, ?, ?)`;
-    const [locationResults] = await mysqlConnection()
-      .promise()
-      .query(insertLocationQuery, [name, address, city, country]);
-    const locationId = locationResults.insertId;
+    const [locationRows] = await connection.query(
+      `SELECT id FROM location WHERE name = ? AND address = ? AND city = ? AND country = ?`,
+      [name, address, city, country]
+    );
+    let locationId;
+    if (locationRows.length === 0) {
+      const [locationInsert] = await connection.query(
+        `INSERT INTO location (name, address, city, country) VALUES (?, ?, ?, ?)`,
+        [name, address, city, country]
+      );
+      locationId = locationInsert.insertId;
+    } else {
+      locationId = locationRows[0].id;
+    }
 
-    // Insert the event into the 'events' table
-    const insertEventQuery = `
-      INSERT INTO events (title, description, start_date, end_date, image_url, category_id, location_id) 
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `;
-    const [eventResults] = await mysqlConnection()
-      .promise()
-      .query(insertEventQuery, [
+    // Insert event
+    const [eventInsert] = await connection.query(
+      `INSERT INTO events (title, description, start_date, end_date, image_url, category_id, location_id) 
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
         title,
         description,
         start_date,
@@ -77,10 +81,11 @@ export const createEvent = async (req, res, next) => {
         image_url,
         categoryId,
         locationId,
-      ]);
+      ]
+    );
 
     res.status(201).json({
-      id: eventResults.insertId,
+      id: eventInsert.insertId,
       title,
       description,
       start_date,
@@ -95,6 +100,7 @@ export const createEvent = async (req, res, next) => {
   }
 };
 
+// GET ALL EVENTS
 export const getEvents = async (req, res, next) => {
   const query = `
     SELECT 
@@ -104,8 +110,8 @@ export const getEvents = async (req, res, next) => {
       events.start_date, 
       events.end_date, 
       events.image_url, 
-      categories.name AS category_name,  /* Correctly select category name */
-      location.name AS location_name,    /* Correctly select location name */
+      categories.name AS category_name, 
+      location.name AS location_name, 
       location.address, 
       location.city, 
       location.country
@@ -114,17 +120,18 @@ export const getEvents = async (req, res, next) => {
     LEFT JOIN location ON events.location_id = location.id
   `;
 
-  mysqlConnection().query(query, (error, results, fields) => {
-    if (error) {
-      return next(errorHandler(500, "Failed to fetch events"));
-    }
-    console.log("Results from query: ", results); // Log to check the data
-    res.status(200).json(results); // Return the results, which should include category_name and location_name
-  });
+  try {
+    const [results] = await mysqlConnection().promise().query(query);
+    res.status(200).json(results);
+  } catch (error) {
+    return next(errorHandler(500, "Failed to fetch events"));
+  }
 };
 
+// GET SINGLE EVENT
 export const getEvent = async (req, res, next) => {
   const eventId = req.params.eventId;
+
   const query = `
     SELECT 
       events.id, 
@@ -144,53 +151,72 @@ export const getEvent = async (req, res, next) => {
     WHERE events.id = ?
   `;
 
-  mysqlConnection().query(query, [eventId], (error, results, fields) => {
-    if (error) {
-      return next(errorHandler(500, "Failed to fetch event"));
-    }
+  try {
+    const [results] = await mysqlConnection().promise().query(query, [eventId]);
     if (results.length === 0) {
       return next(errorHandler(404, "Event not found"));
     }
-    res.status(200).json(results[0]); // Ensure the response returns the full event with category and location names
-  });
+    res.status(200).json(results[0]);
+  } catch (error) {
+    return next(errorHandler(500, "Failed to fetch event"));
+  }
 };
 
+// DELETE EVENT
 export const deleteEvent = async (req, res, next) => {
   if (!req.user.isAdmin) {
     return next(errorHandler(403, "You are not allowed to delete an event"));
   }
+
   const eventId = req.params.eventId;
-  const query = `DELETE FROM events WHERE id = ?`;
-  mysqlConnection().query(query, [eventId], (error, results, fields) => {
-    if (error || results.affectedRows === 0) {
+
+  try {
+    const [results] = await mysqlConnection()
+      .promise()
+      .query(`DELETE FROM events WHERE id = ?`, [eventId]);
+
+    if (results.affectedRows === 0) {
       return next(errorHandler(404, "Event not found"));
     }
+
     res.status(200).json({ message: "Event deleted successfully" });
-  });
+  } catch (error) {
+    return next(errorHandler(500, "Failed to delete event"));
+  }
 };
 
+// UPDATE EVENT
 export const updateEvent = async (req, res, next) => {
   if (!req.user.isAdmin) {
     return next(errorHandler(403, "You are not allowed to update an event"));
   }
+
   const eventId = req.params.eventId;
   const { title, description, start_date, end_date, image_url } = req.body;
-  const query = `UPDATE events SET title = ?, description = ?, start_date = ?, end_date = ?, image_url = ? WHERE id = ?`;
-  mysqlConnection().query(
-    query,
-    [title, description, start_date, end_date, image_url, eventId],
-    (error, results, fields) => {
-      if (error || results.affectedRows === 0) {
-        return next(errorHandler(404, "Event not found"));
-      }
-      res.status(200).json({
-        id: eventId,
-        title,
-        description,
-        start_date,
-        end_date,
-        image_url,
-      });
+
+  try {
+    const [results] = await mysqlConnection()
+      .promise()
+      .query(
+        `UPDATE events 
+         SET title = ?, description = ?, start_date = ?, end_date = ?, image_url = ? 
+         WHERE id = ?`,
+        [title, description, start_date, end_date, image_url, eventId]
+      );
+
+    if (results.affectedRows === 0) {
+      return next(errorHandler(404, "Event not found"));
     }
-  );
+
+    res.status(200).json({
+      id: eventId,
+      title,
+      description,
+      start_date,
+      end_date,
+      image_url,
+    });
+  } catch (error) {
+    return next(errorHandler(500, "Failed to update event"));
+  }
 };
