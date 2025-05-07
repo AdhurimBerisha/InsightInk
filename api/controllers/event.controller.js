@@ -1,5 +1,6 @@
 import mysqlConnection from "../mysql.js";
 import { errorHandler } from "../utils/error.js";
+import User from "../models/user.model.js";
 
 // CREATE EVENT
 export const createEvent = async (req, res, next) => {
@@ -218,5 +219,38 @@ export const updateEvent = async (req, res, next) => {
     });
   } catch (error) {
     return next(errorHandler(500, "Failed to update event"));
+  }
+};
+
+export const joinEvent = async (req, res, next) => {
+  const eventId = req.params.eventId;
+
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return next(errorHandler(404, "User not found in MongoDB"));
+    }
+
+    const connection = mysqlConnection().promise();
+
+    // Check if already joined
+    const [existing] = await connection.query(
+      `SELECT * FROM attendees WHERE event_id = ? AND email = ?`,
+      [eventId, user.email]
+    );
+
+    if (existing.length > 0) {
+      return next(errorHandler(400, "You have already joined this event"));
+    }
+
+    await connection.query(
+      `INSERT INTO attendees (event_id, username, email) VALUES (?, ?, ?)`,
+      [eventId, user.username, user.email]
+    );
+
+    res.status(201).json({ message: "You have joined the event!" });
+  } catch (error) {
+    console.error(error);
+    return next(errorHandler(500, "Failed to join event"));
   }
 };
