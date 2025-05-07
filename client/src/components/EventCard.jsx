@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 
 export default function EventCard({ event }) {
@@ -7,6 +7,7 @@ export default function EventCard({ event }) {
   const [message, setMessage] = useState("");
   const { currentUser } = useSelector((state) => state.user);
 
+  // Format the date
   const formatDate = (dateString) => {
     const options = { year: "numeric", month: "long", day: "numeric" };
     return new Date(dateString).toLocaleDateString(undefined, options);
@@ -16,6 +17,7 @@ export default function EventCard({ event }) {
     setShowFullDescription((prev) => !prev);
   };
 
+  // Handle joining event
   const handleJoin = async () => {
     try {
       const res = await fetch(`/api/event/join/${event.id}`, {
@@ -34,10 +36,21 @@ export default function EventCard({ event }) {
 
       setJoined(true);
       setMessage(data.message || "Successfully joined the event!");
+
+      // Save to localStorage
+      localStorage.setItem(`joined-event-${event.id}`, "true");
     } catch (err) {
       setMessage(err.message);
     }
   };
+
+  // Check if the user has already joined this event on component mount
+  useEffect(() => {
+    const joinedStatus = localStorage.getItem(`joined-event-${event.id}`);
+    if (joinedStatus === "true") {
+      setJoined(true);
+    }
+  }, [event.id]);
 
   return (
     <div className="group relative m-7 w-full border border-teal-500 hover:border-2 min-h-[480px] overflow-hidden rounded-lg sm:w-[430px]">
@@ -86,14 +99,14 @@ export default function EventCard({ event }) {
           onClick={handleJoin}
           disabled={joined}
           className={`mt-3 p-2 rounded-lg w-full ${
-            joined ? "bg-gray-400" : "bg-teal-500 hover:bg-teal-600"
+            joined ? "bg-green-500" : "bg-teal-500 hover:bg-teal-600"
           } text-white`}
         >
           {joined ? "Joined" : "Join Event"}
         </button>
 
         {message && (
-          <p className="text-center text-sm text-red-500 mt-1">{message}</p>
+          <p className="text-center text-sm text-green-500 mt-1">{message}</p>
         )}
       </div>
     </div>
