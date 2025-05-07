@@ -2,7 +2,6 @@ import mysqlConnection from "../mysql.js";
 import { errorHandler } from "../utils/error.js";
 import User from "../models/user.model.js";
 
-// CREATE EVENT
 export const createEvent = async (req, res, next) => {
   if (!req.user.isAdmin) {
     return next(errorHandler(403, "You are not allowed to create an event"));
@@ -37,7 +36,6 @@ export const createEvent = async (req, res, next) => {
   try {
     const connection = mysqlConnection().promise();
 
-    // Check or insert category
     const [categoryRows] = await connection.query(
       `SELECT id FROM categories WHERE name = ?`,
       [category]
@@ -53,7 +51,6 @@ export const createEvent = async (req, res, next) => {
       categoryId = categoryRows[0].id;
     }
 
-    // Check or insert location
     const { name, address, city, country } = location;
     const [locationRows] = await connection.query(
       `SELECT id FROM location WHERE name = ? AND address = ? AND city = ? AND country = ?`,
@@ -70,7 +67,6 @@ export const createEvent = async (req, res, next) => {
       locationId = locationRows[0].id;
     }
 
-    // Insert event
     const [eventInsert] = await connection.query(
       `INSERT INTO events (title, description, start_date, end_date, image_url, category_id, location_id) 
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
@@ -101,7 +97,6 @@ export const createEvent = async (req, res, next) => {
   }
 };
 
-// GET ALL EVENTS
 export const getEvents = async (req, res, next) => {
   const query = `
     SELECT 
@@ -129,7 +124,6 @@ export const getEvents = async (req, res, next) => {
   }
 };
 
-// GET SINGLE EVENT
 export const getEvent = async (req, res, next) => {
   const eventId = req.params.eventId;
 
@@ -163,7 +157,6 @@ export const getEvent = async (req, res, next) => {
   }
 };
 
-// DELETE EVENT
 export const deleteEvent = async (req, res, next) => {
   if (!req.user.isAdmin) {
     return next(errorHandler(403, "You are not allowed to delete an event"));
@@ -186,7 +179,6 @@ export const deleteEvent = async (req, res, next) => {
   }
 };
 
-// UPDATE EVENT
 export const updateEvent = async (req, res, next) => {
   if (!req.user.isAdmin) {
     return next(errorHandler(403, "You are not allowed to update an event"));
@@ -233,7 +225,6 @@ export const joinEvent = async (req, res, next) => {
 
     const connection = mysqlConnection().promise();
 
-    // Check if already joined
     const [existing] = await connection.query(
       `SELECT * FROM attendees WHERE event_id = ? AND email = ?`,
       [eventId, user.email]

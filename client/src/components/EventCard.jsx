@@ -7,7 +7,6 @@ export default function EventCard({ event }) {
   const [message, setMessage] = useState("");
   const { currentUser } = useSelector((state) => state.user);
 
-  // Format the date
   const formatDate = (dateString) => {
     const options = { year: "numeric", month: "long", day: "numeric" };
     return new Date(dateString).toLocaleDateString(undefined, options);
@@ -17,7 +16,6 @@ export default function EventCard({ event }) {
     setShowFullDescription((prev) => !prev);
   };
 
-  // Handle joining event
   const handleJoin = async () => {
     try {
       const res = await fetch(`/api/event/join/${event.id}`, {
@@ -37,14 +35,12 @@ export default function EventCard({ event }) {
       setJoined(true);
       setMessage(data.message || "Successfully joined the event!");
 
-      // Save to localStorage
       localStorage.setItem(`joined-event-${event.id}`, "true");
     } catch (err) {
       setMessage(err.message);
     }
   };
 
-  // Check if the user has already joined this event on component mount
   useEffect(() => {
     const joinedStatus = localStorage.getItem(`joined-event-${event.id}`);
     if (joinedStatus === "true") {
