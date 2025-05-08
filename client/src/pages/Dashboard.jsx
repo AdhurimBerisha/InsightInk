@@ -7,6 +7,7 @@ import DashUsers from "../components/DashUsers";
 import DashComments from "../components/DashComments";
 import DashboardComponent from "../components/DashboardComponent";
 import DashEvents from "../components/DashEvents";
+import DashAttendees from "../components/DashAttendees";
 
 export default function Dashboard() {
   const location = useLocation();
@@ -19,7 +20,7 @@ export default function Dashboard() {
     }
   }, [location.search]);
   return (
-    <div className='min-h-screen flex flex-col md:flex-row'>
+    <div className="min-h-screen flex flex-col md:flex-row">
       <div className="md:w-56">
         {/* Sidebar */}
         <DashSidebar />
@@ -27,15 +28,17 @@ export default function Dashboard() {
       {/* profile... */}
       {tab === "profile" && <DashProfile />}
       {/* posts */}
-      {tab === 'posts' && <DashPosts />}
+      {tab === "posts" && <DashPosts />}
       {/* users */}
-      {tab === 'users' && <DashUsers />}
+      {tab === "users" && <DashUsers />}
       {/* comments */}
-      {tab === 'comments' && <DashComments />}
+      {tab === "comments" && <DashComments />}
       {/* dashboard component */}
-      {tab === 'dash' && <DashboardComponent />}
+      {tab === "dash" && <DashboardComponent />}
       {/* events */}
-      {tab === 'events' && <DashEvents />}
+      {tab === "events" && <DashEvents />}
+      {/* attendees */}
+      {tab === "attendees" && <DashAttendees />}
     </div>
   );
 }

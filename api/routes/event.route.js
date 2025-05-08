@@ -7,11 +7,13 @@ import {
   getEvents,
   joinEvent,
   updateEvent,
+  getAttendees,
 } from "../controllers/event.controller.js";
 
 const router = express.Router();
 
 router.post("/create", verifyToken, createEvent);
+router.get("/attendees", getAttendees);
 router.get("/getevents", getEvents);
 router.get("/:eventId", getEvent);
 router.delete("/deleteevent/:eventId/:userId", verifyToken, deleteEvent);

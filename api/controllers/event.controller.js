@@ -245,3 +245,16 @@ export const joinEvent = async (req, res, next) => {
     return next(errorHandler(500, "Failed to join event"));
   }
 };
+
+export const getAttendees = async (req, res, next) => {
+  try {
+    const [attendees] = await mysqlConnection()
+      .promise()
+      .query("SELECT username, email FROM attendees");
+
+    res.status(200).json(attendees);
+  } catch (error) {
+    console.error("MySQL Error:", error);
+    next(errorHandler(500, "Failed to fetch attendees"));
+  }
+};
