@@ -37,7 +37,9 @@ function DashAttendees() {
           {attendees.map((attendee, index) => (
             <Table.Body key={index} className="divide-y">
               <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
-                <Table.Cell>{attendee.username}</Table.Cell>
+                <Table.Cell className="dark:text-white">
+                  {attendee.username}
+                </Table.Cell>
                 <Table.Cell>{attendee.email}</Table.Cell>
                 <Table.Cell>{attendee.event_title}</Table.Cell>
               </Table.Row>

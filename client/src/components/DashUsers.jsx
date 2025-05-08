@@ -49,18 +49,18 @@ export default function DashUsers() {
 
   const handleDeleteUser = async () => {
     try {
-        const res = await fetch(`/api/user/delete/${userIdToDelete}`, {
-            method: 'DELETE',
-        });
-        const data = await res.json();
-        if (res.ok) {
-            setUsers((prev) => prev.filter((user) => user._id !== userIdToDelete));
-            setShowModal(false);
-        } else {
-            console.log(data.message);
-        }
+      const res = await fetch(`/api/user/delete/${userIdToDelete}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setUsers((prev) => prev.filter((user) => user._id !== userIdToDelete));
+        setShowModal(false);
+      } else {
+        console.log(data.message);
+      }
     } catch (error) {
-        console.log(error.message);
+      console.log(error.message);
     }
   };
 
@@ -87,10 +87,12 @@ export default function DashUsers() {
                     <img
                       src={user.profilePicture}
                       alt={user.username}
-                      className="w-10 h-10 object-cover bg-gray-500 rounded-full"
+                      className="w-10 h-10 object-cover bg-gray-500 rounded-full "
                     />
                   </Table.Cell>
-                  <Table.Cell>{user.username}</Table.Cell>
+                  <Table.Cell className="dark:text-white">
+                    {user.username}
+                  </Table.Cell>
                   <Table.Cell>{user.email}</Table.Cell>
                   <Table.Cell>
                     {user.isAdmin ? (
