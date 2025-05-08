@@ -248,9 +248,14 @@ export const joinEvent = async (req, res, next) => {
 
 export const getAttendees = async (req, res, next) => {
   try {
-    const [attendees] = await mysqlConnection()
-      .promise()
-      .query("SELECT username, email FROM attendees");
+    const [attendees] = await mysqlConnection().promise().query(`
+        SELECT 
+          attendees.username, 
+          attendees.email, 
+          events.title AS event_title
+        FROM attendees
+        JOIN events ON attendees.event_id = events.id
+      `);
 
     res.status(200).json(attendees);
   } catch (error) {

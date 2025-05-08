@@ -1,3 +1,4 @@
+import { Table } from "flowbite-react";
 import { useEffect, useState } from "react";
 
 function DashAttendees() {
@@ -7,9 +8,6 @@ function DashAttendees() {
     const fetchAttendees = async () => {
       try {
         const res = await fetch("/api/event/attendees", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`, // Optional if route is protected
-          },
           credentials: "include",
         });
 
@@ -28,24 +26,27 @@ function DashAttendees() {
   }, []);
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Event Attendees</h2>
-      <table className="w-full border-collapse border border-gray-300">
-        <thead>
-          <tr className="bg-gray-200">
-            <th className="border p-2">Username</th>
-            <th className="border p-2">Email</th>
-          </tr>
-        </thead>
-        <tbody>
+    <div className="table-auto overflow-x-scroll md:mx-auto p-3 scrollbar scrollbar-track-slate-100 scrollbar-thumb-slate-300 dark:scrollbar-track-slate-700 dark:scrollbar-thumb-slate-500">
+      {attendees.length > 0 ? (
+        <Table hoverable className="shadow-md">
+          <Table.Head>
+            <Table.HeadCell>Username</Table.HeadCell>
+            <Table.HeadCell>Email</Table.HeadCell>
+            <Table.HeadCell>Event</Table.HeadCell>
+          </Table.Head>
           {attendees.map((attendee, index) => (
-            <tr key={index}>
-              <td className="border p-2">{attendee.username}</td>
-              <td className="border p-2">{attendee.email}</td>
-            </tr>
+            <Table.Body key={index} className="divide-y">
+              <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
+                <Table.Cell>{attendee.username}</Table.Cell>
+                <Table.Cell>{attendee.email}</Table.Cell>
+                <Table.Cell>{attendee.event_title}</Table.Cell>
+              </Table.Row>
+            </Table.Body>
           ))}
-        </tbody>
-      </table>
+        </Table>
+      ) : (
+        <p>No attendees found!</p>
+      )}
     </div>
   );
 }
