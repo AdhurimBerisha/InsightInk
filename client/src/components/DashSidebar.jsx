@@ -9,6 +9,8 @@ import {
   HiAnnotation,
   HiChartPie,
 } from "react-icons/hi";
+import { FaPeopleGroup } from "react-icons/fa6";
+
 import { MdEvent } from "react-icons/md";
 import { signoutSuccess } from "../redux/user/userSlice";
 import { useDispatch } from "react-redux";
@@ -111,7 +113,7 @@ export default function DashSidebar() {
             <Link to="/dashboard?tab=attendees">
               <Sidebar.Item
                 active={tab === "attendees"}
-                icon={MdEvent}
+                icon={FaPeopleGroup}
                 as="div"
               >
                 Attendees
